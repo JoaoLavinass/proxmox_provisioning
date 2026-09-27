@@ -9,11 +9,10 @@ terraform {
 }
 
 provider "proxmox" {
-  # Change this to your Proxmox mini PC IP address
-  endpoint  = "https://192.168.1.50:8006/" 
-  api_token = "terraform@pve!tf-token=YOUR-UUID-SECRET-HERE"
+  endpoint  = "https://192.168.1.188:8006/" 
   
-  # Set to true if you are using a self-signed SSL certificate on Proxmox
+  # Format: "USER@REALM!TOKENID=UUID"
+  api_token = "terraform@pve!tf-token=TOKENID" 
   insecure  = true 
 }
 
@@ -34,6 +33,7 @@ resource "proxmox_virtual_environment_vm" "ubuntu_vm" {
   disk {
     datastore_id = "local-lvm"
     size         = 20
+    interface    = "scsi0"  
   }
 
   network_device {
