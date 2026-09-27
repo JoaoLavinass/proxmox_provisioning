@@ -1,39 +1,45 @@
-terraform {
-  required_version = ">= 1.6.0"
-  required_providers {
-    proxmox = {
-      source  = "bpg/proxmox"
-      version = "~> 0.78.0"
-    }
-  }
+data "local_file" "ssh_public_key" {
+  filename = "/home/joaolavinas/.ssh/id_rsa.pub"
 }
 
-provider "proxmox" {
-  endpoint  = "https://192.168.1.188:8006/" 
-  
-  # Format: "USER@REALM!TOKENID=UUID"
-  api_token = "terraform@pve!tf-token=TOKENID" 
-  insecure  = true 
+resource "proxmox_virtual_environment_download_file" "ubuntu_cloud_image" {
+  content_type = "iso"
+  datastore_id = "local"
+  node_name    = "pve"
+
+  url = "https://cloud-images.ubuntu.com/jammy/current/jammy-server-cloudimg-amd64.img"
+
+  file_name = "jammy-server-cloudimg-amd64.img"
+
 }
 
-# Example: Define a cloud-init Ubuntu/Debian Virtual Machine
 resource "proxmox_virtual_environment_vm" "ubuntu_vm" {
-  node_name = "pve" # Match this to your Proxmox node name
-  vm_id     = 100
-  name      = "sre-lab-node-01"
+  name      = "test-ubuntu"
+  node_name = "pve"
 
-  cpu {
-    cores = 2
-  }
+  stop_on_destroy = true
 
-  memory {
-    dedicated = 2048 # 2GB RAM
+  initialization {
+    ip_config {
+      ipv4 {
+        address = var.vm_ip_address
+        gateway = var.vm_gateway
+      }
+    }
+
+    user_account {
+      username = "ubuntu"
+      keys     = [trimspace(data.local_file.ssh_public_key.content)]
+    }
   }
 
   disk {
     datastore_id = "local-lvm"
+    file_id  = proxmox_virtual_environment_download_file.ubuntu_cloud_image.id
+    interface    = "virtio0"
+    iothread     = true
+    discard      = "on"
     size         = 20
-    interface    = "scsi0"  
   }
 
   network_device {
