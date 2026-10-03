@@ -8,3 +8,17 @@ variable "vm_gateway" {
   type        = string
 }
 
+variable "vm_name" {
+  description = "Virtual Machine name"
+  type        = string
+}
+
+variable "cpu_cores" {
+  description = "Number of CPU cores"
+  type        = number
+}
+
+variable "ssh_public_key" {
+  type = string
+}
+

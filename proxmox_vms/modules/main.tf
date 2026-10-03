@@ -1,7 +1,3 @@
-data "local_file" "ssh_public_key" {
-  filename = "/home/joaolavinas/.ssh/id_rsa.pub"
-}
-
 resource "proxmox_virtual_environment_download_file" "ubuntu_cloud_image" {
   content_type = "iso"
   datastore_id = "local"
@@ -9,12 +5,12 @@ resource "proxmox_virtual_environment_download_file" "ubuntu_cloud_image" {
 
   url = "https://cloud-images.ubuntu.com/jammy/current/jammy-server-cloudimg-amd64.img"
 
-  file_name = "jammy-server-cloudimg-amd64.img"
+  file_name = "jammy-server-cloudimg-amd64v2.img"
 
 }
 
 resource "proxmox_virtual_environment_vm" "ubuntu_vm" {
-  name      = "test-ubuntu"
+  name      = var.vm_name
   node_name = "pve"
 
   stop_on_destroy = true
@@ -29,7 +25,7 @@ resource "proxmox_virtual_environment_vm" "ubuntu_vm" {
 
     user_account {
       username = "ubuntu"
-      keys     = [trimspace(data.local_file.ssh_public_key.content)]
+      keys     = [var.ssh_public_key]
     }
   }
 
@@ -40,6 +36,10 @@ resource "proxmox_virtual_environment_vm" "ubuntu_vm" {
     iothread     = true
     discard      = "on"
     size         = 20
+  }
+
+  cpu{
+    cores = var.cpu_cores
   }
 
   network_device {
