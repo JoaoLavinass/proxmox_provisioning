@@ -56,3 +56,53 @@ Distributed the public key to the target remote machine to authorize incoming co
 ```bash
 ssh-copy-id -i ~/.ssh/id_rsa.pub root@192.168.1.188
 ```
+
+--- 
+
+## 2026-09-27 — Initial Proxmox OpenTofu Configuration
+
+I was trying to structure my provisioning recipie, following this example:
+
+```
+infrastructure/
+├── modules/
+│   └── proxmox-vm/
+│       ├── main.tf
+│       ├── variables.tf
+│       └── outputs.tf
+│
+└── environments/
+    ├── lab/
+    │   ├── main.tf
+    │   ├── providers.tf
+    │   ├── variables.tf
+    │   └── terraform.tfvars
+    │
+    └── prod/
+        ├── main.tf
+        ├── providers.tf
+        ├── variables.tf
+        └── terraform.tfvars
+```
+Each module can be mentioned like:
+
+```
+module "network" {
+  source = "../../modules/proxmox-vm"
+
+  cpu_core = 2
+}
+```
+The next chapters is the developing this structure.
+
+## 2026-10-03 — Modules configuration
+
+Entry Update:
+Variable Declarations: Ensured all variables used in the lab configuration are explicitly declared to properly ingest values from the terraform.tfvars file.
+
+roxmox Cloud-Image Management: Addressed handling for existing cloud images when using the proxmox_virtual_environment_vm download resource. Going forward, we have three potential approaches:
+
+- Delete the existing image file directly within Proxmox before running;
+- Download and Rename the new image by specifying a unique file_name;
+- Bypass/Remove the download step entirely if the image is already provisioned.
+
